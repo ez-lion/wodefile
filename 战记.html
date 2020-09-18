@@ -15,6 +15,12 @@
 </head>
 
 <body>
+
+  <script src="./js/jquery-1.12.4.min.js"></script>
+  <script src="./js/template-web.js"></script>
+
+
+
   <img src="./img/header.png" alt="" class="header" />
   <div class="cq-wrap">
     <!-- 导航 -->
@@ -36,7 +42,7 @@
         <th>武器</th>
       </thead>
       <tbody>
-        <tr>
+        <!-- <tr>
           <td>
             <img class="icon" src="http://p6.qhimg.com/dr/72__/t01b8063ea608652431.png" alt="" />
             <span>
@@ -51,7 +57,7 @@
             <img class="weapon" src="http://p6.qhimg.com/dr/45__/t0178ac936dcb72650f.png" alt="" />
             疫苗-G
           </td>
-        </tr>
+        </tr> -->
       </tbody>
     </table>
 
@@ -60,7 +66,113 @@
     <img class="loading" src="./img/loading01.gif" alt="" />
   </div>
 
+  <script id="hero_lis" type="text/html">
+    {{each data.heros v}}
+    <tr>
+      <td>
+        <img class="icon" src="{{v.heroIcon}}" alt="">
+        <span>
+          {{v.heroName}}
+        </span>
+      </td>
+      <td>
+        <img class="skill" src="{{v.skillIcon}}" alt="">
+        {{v.skillName}}
+      </td>
+      <td>
+        <img class="weapon" src="{{v.weaponIcon}}" alt="">
+        {{v.weaponName}}
+      </td>
+    </tr>
+    {{/each}}
+  
+  
+  
+  </script>
 
+
+  <script>
+
+    //特别要求，随机更换背景图
+     // https://autumnfish.cn/api/cover/random
+     getBgp();
+
+     setInterval(getBgp,5000);
+
+     function getBgp(){
+
+          $.ajax({
+            url:'https://autumnfish.cn/api/cover/random',
+            type:'get',
+            dataType:'json',
+            success:function(backData){
+              // console.log(backData);
+              $('body').css('background',`url(${backData.url}) no-repeat center/cover `);
+            }
+          });
+     };
+
+
+    //1.给职业栏创建点击事件，点击后颜色改变
+    //2.点击后获取到对应职业的数据，把数据渲染到下方
+
+    
+    
+     $('.nav ul li').click(function(){
+
+        $(this).addClass('active').siblings('li').removeClass('active');
+
+        $.ajax({
+          url:'https://autumnfish.cn/api/cq/category',
+          type:'get',
+          dataType:'json',
+          data:{
+            type:$(this).children('span').text(),
+          },
+          success:function(backData){
+            // console.log(backData);
+            $('tbody').html(template('hero_lis',backData));
+          }
+        });
+
+     });
+
+     //默认加载第一个
+     $('.nav ul li:eq(0)').click();
+
+
+
+
+    //3.点击英雄的头像，出现技能动图
+
+     $('tbody').on('click','img',function(){
+        $name=$(this).siblings('span').text().trim();
+        $('.cover').fadeIn();
+        $.ajax({
+          url:'https://autumnfish.cn/api/cq/gif',
+          type:'get',
+          dataType:'json',
+          data:{
+            name:$name,
+          },
+          success:function(backData){
+            // console.log(backData);
+            $('.cover img').attr('src',backData.data.skillGif);
+          }
+        });
+     })
+     
+     $('.cover').click(function(){
+        $(this).fadeOut(function(){
+
+          $('.cover img').attr('src','./img/loading01.gif')
+        });
+     });
+
+
+
+    
+  </script>
   
 </body>
 
